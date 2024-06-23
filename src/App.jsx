@@ -22,7 +22,27 @@ const Page1 = () => <div>Page1</div>;
 const Page2 = () => <div>Page2</div>;
 
 const BlockNavigation = () => {
+  const [lastLocation, setLastLocation] = useState(null);
+  const [confirmNavigation, setConfirmNavigation] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
   let blocker = useBlocker(true);
+
+  useEffect(() => {
+    const handleWindowClose = (e) => {
+      e.preventDefault();
+      e.returnValue = "Do you really want to go back?";
+      setConfirmNavigation(true);
+      setLastLocation(location);
+      return "asdf";
+    };
+
+    window.addEventListener("beforeunload", handleWindowClose);
+    return () => {
+      window.removeEventListener("beforeunload", handleWindowClose);
+    };
+  }, []);
 
   useEffect(() => {
     if (blocker.state === "blocked") {
@@ -31,10 +51,12 @@ const BlockNavigation = () => {
         header: "Confirmation",
         icon: "pi pi-exclamation-triangle",
         accept: () => {
+          setConfirmNavigation(false);
           blocker.proceed();
           // navigate(-1);
         },
         reject: () => {
+          setConfirmNavigation(false);
           blocker.reset();
         },
       });
@@ -44,7 +66,7 @@ const BlockNavigation = () => {
   return null;
 };
 
-const Layout = () => {
+const Test = () => {
   return (
     <>
       <ConfirmDialog />
@@ -59,7 +81,7 @@ const Layout = () => {
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/" element={<Layout />}>
+    <Route path="/" element={<Test />}>
       <Route path="/" element={<Home />} />
       <Route path="page1" element={<Page1 />} />
       <Route path="page2" element={<Page2 />} />
